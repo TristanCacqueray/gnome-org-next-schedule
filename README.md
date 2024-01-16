@@ -18,7 +18,7 @@ The events list can be generated using [org-ql][org-ql]:
 ```emacs-lisp
 (defun tc/mk-next-meeting-query ()
   "The next meeting query."
-  '(and (not (or (todo "DONE") (todo "CANCELLED"))) (scheduled :from now)))
+  '(and (not (done)) (not (habit)) (scheduled :from ,(ts-now))))
 
 ;; see: https://github.com/alphapapa/org-ql/issues/397
 (defun tc/compare-entry (b a)
@@ -44,7 +44,7 @@ This is like org-ql--date< but considering closed date too."
                     :sort 'tc/compare-entry
                     ))
          (formated (mapcar 'tc/sched-format (seq-filter 'not-habits entries)))
-         (report (s-unlines (reverse formated))))
+         (report (s-join "\n" (reverse formated))))
     (f-write-text report 'utf-8 "~/.local/share/gnome-org-next-schedule/events")))
 
 ;; TODO: call render-sched when the agenda changes
