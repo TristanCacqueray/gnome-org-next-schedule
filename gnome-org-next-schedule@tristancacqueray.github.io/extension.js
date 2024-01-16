@@ -118,10 +118,10 @@ var pure = function(dict) {
 };
 var liftA1 = function(dictApplicative) {
   var apply2 = apply(dictApplicative.Apply0());
-  var pure1 = pure(dictApplicative);
+  var pure12 = pure(dictApplicative);
   return function(f) {
     return function(a) {
-      return apply2(pure1(f))(a);
+      return apply2(pure12(f))(a);
     };
   };
 };
@@ -258,12 +258,12 @@ var append = function(dict) {
 // output/Control.Monad/index.js
 var ap = function(dictMonad) {
   var bind3 = bind(dictMonad.Bind1());
-  var pure4 = pure(dictMonad.Applicative0());
+  var pure3 = pure(dictMonad.Applicative0());
   return function(f) {
     return function(a) {
       return bind3(f)(function(f$prime) {
         return bind3(a)(function(a$prime) {
-          return pure4(f$prime(a$prime));
+          return pure3(f$prime(a$prime));
         });
       });
     };
@@ -983,13 +983,13 @@ var foldr = function(dict) {
 };
 var traverse_ = function(dictApplicative) {
   var applySecond2 = applySecond(dictApplicative.Apply0());
-  var pure4 = pure(dictApplicative);
+  var pure3 = pure(dictApplicative);
   return function(dictFoldable) {
     var foldr2 = foldr(dictFoldable);
     return function(f) {
       return foldr2(function($454) {
         return applySecond2(f($454));
-      })(pure4(unit));
+      })(pure3(unit));
     };
   };
 };
@@ -1068,13 +1068,13 @@ var traverseArrayImpl = function() {
   }
   return function(apply2) {
     return function(map9) {
-      return function(pure4) {
+      return function(pure3) {
         return function(f) {
           return function(array) {
             function go(bot, top2) {
               switch (top2 - bot) {
                 case 0:
-                  return pure4([]);
+                  return pure3([]);
                 case 1:
                   return map9(array1)(f(array[bot]));
                 case 2:
@@ -2468,13 +2468,13 @@ var load_contents = function(file) {
 // output/Gio.File/index.js
 var map7 = /* @__PURE__ */ map(functorEffect);
 var readFileSync = function(path) {
-  return function __do2() {
+  return function __do3() {
     var file = new_for_path(path)();
     return load_contents(file)(toNullable(Nothing.value))();
   };
 };
 var getModificationDateTime = function(path) {
-  return function __do2() {
+  return function __do3() {
     var file = new_for_path(path)();
     return map7(toMaybe)(get_modification_date_time_impl(file))();
   };
@@ -2542,23 +2542,23 @@ var set_text = (label) => (txt) => () => label.set_text(txt);
 var $$new5 = new_4;
 
 // output/GnomeOrgNextSchedule/index.js
+var add_style_class_name2 = /* @__PURE__ */ add_style_class_name();
+var add_child2 = /* @__PURE__ */ add_child()();
+var set_y_align2 = /* @__PURE__ */ set_y_align();
 var show2 = /* @__PURE__ */ show(showInt);
 var div3 = /* @__PURE__ */ div(euclideanRingInt);
-var bind2 = /* @__PURE__ */ bind(bindEither);
-var pure3 = /* @__PURE__ */ pure(applicativeEither);
+var bind1 = /* @__PURE__ */ bind(bindEither);
+var pure1 = /* @__PURE__ */ pure(applicativeEither);
 var sequence2 = /* @__PURE__ */ sequence(traversableArray)(applicativeEither);
 var map8 = /* @__PURE__ */ map(functorArray);
 var coerce2 = /* @__PURE__ */ coerce();
 var map1 = /* @__PURE__ */ map(functorEffect);
-var bind22 = /* @__PURE__ */ bind(bindMaybe);
+var bind2 = /* @__PURE__ */ bind(bindMaybe);
 var pure22 = /* @__PURE__ */ pure(applicativeMaybe);
 var mempty2 = /* @__PURE__ */ mempty(monoidUnit);
 var destroy2 = /* @__PURE__ */ destroy();
-var add_child2 = /* @__PURE__ */ add_child()();
 var traverse_2 = /* @__PURE__ */ traverse_(applicativeEffect)(foldableArray);
 var $$void2 = /* @__PURE__ */ $$void(functorEffect);
-var add_style_class_name2 = /* @__PURE__ */ add_style_class_name();
-var set_y_align2 = /* @__PURE__ */ set_y_align();
 var onButtonPressEvent2 = /* @__PURE__ */ onButtonPressEvent();
 var UnixTS = function(x) {
   return x;
@@ -2583,6 +2583,23 @@ var Alerting = /* @__PURE__ */ function() {
   };
   return Alerting2;
 }();
+var topMenuUI = function(ui) {
+  return function __do3() {
+    var box = $$new3();
+    var button = newButton(0)("OrgNextSchedule")(false)();
+    var calIcon = $$new2("x-office-calendar")();
+    var icon = $$new4();
+    add_style_class_name2(icon)("system-status-icon")();
+    set_gicon(icon)(calIcon)();
+    add_child2(box)(icon)();
+    add_child2(box)(ui.countdown)();
+    add_child2(box)(ui.label)();
+    add_child2(button)(box)();
+    set_y_align2(ui.label)(center)();
+    addToStatusArea("OrgNextSchedule")(button)();
+    return button;
+  };
+};
 var semiringUnixTS = semiringInt;
 var ringUnixTS = ringInt;
 var sub2 = /* @__PURE__ */ sub(ringUnixTS);
@@ -2607,9 +2624,9 @@ var renderEvent = function(now) {
           return show2(div3(v)(3600 * 24 | 0)) + "d";
         }
         ;
-        throw new Error("Failed pattern match at GnomeOrgNextSchedule (line 173, column 5 - line 177, column 57): " + []);
+        throw new Error("Failed pattern match at GnomeOrgNextSchedule (line 200, column 5 - line 204, column 57): " + []);
       }();
-      return function __do2() {
+      return function __do3() {
         set_text(ui.countdown)(countdown)();
         return set_text(ui.label)(ev.what)();
       };
@@ -2621,7 +2638,7 @@ var renderState = function(now) {
     return function(state2) {
       var v = head(state2.events);
       if (v instanceof Nothing) {
-        return function __do2() {
+        return function __do3() {
           set_text(ui.countdown)("x")();
           return set_text(ui.label)("No schedule :(")();
         };
@@ -2631,39 +2648,39 @@ var renderState = function(now) {
         return renderEvent(now)(ui)(v.value0);
       }
       ;
-      throw new Error("Failed pattern match at GnomeOrgNextSchedule (line 182, column 28 - line 186, column 35): " + [v.constructor.name]);
+      throw new Error("Failed pattern match at GnomeOrgNextSchedule (line 209, column 28 - line 213, column 35): " + [v.constructor.name]);
     };
   };
 };
 var parseEvents = function(lines) {
   var toEvent = function(line) {
-    return bind2(function() {
+    return bind1(function() {
       var v = indexOf2(" ")(line);
       if (v instanceof Nothing) {
         return new Left("No sep: '" + (line + "'"));
       }
       ;
       if (v instanceof Just) {
-        return pure3(v.value0);
+        return pure1(v.value0);
       }
       ;
-      throw new Error("Failed pattern match at GnomeOrgNextSchedule (line 57, column 15 - line 59, column 23): " + [v.constructor.name]);
+      throw new Error("Failed pattern match at GnomeOrgNextSchedule (line 58, column 15 - line 60, column 23): " + [v.constructor.name]);
     }())(function(sepPos) {
       var v = splitAt2(sepPos)(line);
-      return bind2(function() {
+      return bind1(function() {
         var v1 = new_from_iso8601(v.before);
         if (v1 instanceof Nothing) {
           return new Left("Bad date: " + v.before);
         }
         ;
         if (v1 instanceof Just) {
-          return pure3(v1.value0);
+          return pure1(v1.value0);
         }
         ;
-        throw new Error("Failed pattern match at GnomeOrgNextSchedule (line 62, column 13 - line 64, column 23): " + [v1.constructor.name]);
+        throw new Error("Failed pattern match at GnomeOrgNextSchedule (line 63, column 13 - line 65, column 23): " + [v1.constructor.name]);
       }())(function(date) {
         var when2 = to_unix(date);
-        return pure3({
+        return pure1({
           when: when2,
           what: v.after
         });
@@ -2678,6 +2695,14 @@ var ordUnixTS = ordInt;
 var greaterThanOrEq2 = /* @__PURE__ */ greaterThanOrEq(ordUnixTS);
 var lessThanOrEq2 = /* @__PURE__ */ lessThanOrEq(ordUnixTS);
 var greaterThan2 = /* @__PURE__ */ greaterThan(ordUnixTS);
+var newUI = function __do() {
+  var countdown = $$new5("")();
+  var label = $$new5("")();
+  return {
+    countdown,
+    label
+  };
+};
 var newState = function(now) {
   return function(baseEvents) {
     var events = filter(function(ev) {
@@ -2691,7 +2716,7 @@ var newState = function(now) {
   };
 };
 var loadEvents = function(v) {
-  return function __do2() {
+  return function __do3() {
     var content = readFileSync(v)();
     if (content instanceof Left) {
       warn(new Tuple("Could not read events", content.value0))();
@@ -2709,14 +2734,14 @@ var loadEvents = function(v) {
         return v1.value0;
       }
       ;
-      throw new Error("Failed pattern match at GnomeOrgNextSchedule (line 79, column 18 - line 83, column 26): " + [v1.constructor.name]);
+      throw new Error("Failed pattern match at GnomeOrgNextSchedule (line 80, column 18 - line 84, column 26): " + [v1.constructor.name]);
     }
     ;
-    throw new Error("Failed pattern match at GnomeOrgNextSchedule (line 75, column 3 - line 83, column 26): " + [content.constructor.name]);
+    throw new Error("Failed pattern match at GnomeOrgNextSchedule (line 76, column 3 - line 84, column 26): " + [content.constructor.name]);
   };
 };
 var readState = function(cache) {
-  return function __do2() {
+  return function __do3() {
     var now = map1(UnixTS)(getUnix)();
     var events = loadEvents(cache)();
     return newState(now)(events);
@@ -2724,7 +2749,7 @@ var readState = function(cache) {
 };
 var loadState = function(cache) {
   return function(stateRef) {
-    return function __do2() {
+    return function __do3() {
       log2("Loading gnome-org-next-schedule events")();
       var state2 = readState(cache)();
       write(state2)(stateRef)();
@@ -2733,7 +2758,7 @@ var loadState = function(cache) {
   };
 };
 var getModifiedDate = function(v) {
-  return function __do2() {
+  return function __do3() {
     var file_update = getModificationDateTime(v)();
     if (file_update instanceof Nothing) {
       return 0;
@@ -2743,17 +2768,17 @@ var getModifiedDate = function(v) {
       return to_unix(file_update.value0);
     }
     ;
-    throw new Error("Failed pattern match at GnomeOrgNextSchedule (line 122, column 7 - line 124, column 39): " + [file_update.constructor.name]);
+    throw new Error("Failed pattern match at GnomeOrgNextSchedule (line 123, column 7 - line 125, column 39): " + [file_update.constructor.name]);
   };
 };
-var eventsPath = function __do() {
+var eventsPath = function __do2() {
   var home = map1(fromMaybe("/homeless"))(getenv("HOME"))();
   return home + "/.local/share/gnome-org-next-schedule/events";
 };
 var updateState = function(cache) {
   return function(now) {
     return function(stateRef) {
-      return function __do2() {
+      return function __do3() {
         var state2 = read(stateRef)();
         var $81 = lessThanOrEq2(sub2(now)(state2.updated_at))(61);
         if ($81) {
@@ -2785,7 +2810,7 @@ var notEq2 = /* @__PURE__ */ notEq(/* @__PURE__ */ eqRec()(/* @__PURE__ */ eqRow
 var alarmTime = 300;
 var advanceState = function(now) {
   return function(currentState) {
-    return bind22(head(currentState.events))(function(nextEvent) {
+    return bind2(head(currentState.events))(function(nextEvent) {
       var $83 = greaterThan2(now)(nextEvent.when);
       if ($83) {
         return pure22({
@@ -2810,7 +2835,7 @@ var advanceState = function(now) {
 var worker = function(cache) {
   return function(ui) {
     return function(stateRef) {
-      return function __do2() {
+      return function __do3() {
         var now = map1(UnixTS)(getUnix)();
         var currentState = updateState(cache)(now)(stateRef)();
         var state2 = function() {
@@ -2822,7 +2847,9 @@ var worker = function(cache) {
           if (v instanceof Just) {
             (function() {
               if (v.value0.status instanceof Alerting) {
-                return notify2(v.value0.status.value0.what + " starts in 5min")("")();
+                var msg = v.value0.status.value0.what + " starts in 5min";
+                log2(msg)();
+                return notify2(msg)("")();
               }
               ;
               return mempty2;
@@ -2831,7 +2858,7 @@ var worker = function(cache) {
             return v.value0;
           }
           ;
-          throw new Error("Failed pattern match at GnomeOrgNextSchedule (line 192, column 12 - line 200, column 17): " + [v.constructor.name]);
+          throw new Error("Failed pattern match at GnomeOrgNextSchedule (line 219, column 12 - line 230, column 17): " + [v.constructor.name]);
         }();
         renderState(now)(ui)(state2)();
         return true;
@@ -2841,7 +2868,7 @@ var worker = function(cache) {
 };
 var extension = /* @__PURE__ */ function() {
   var extension_disable = function(env) {
-    return function __do2() {
+    return function __do3() {
       sourceRemove(env.timer)();
       return destroy2(env.button)();
     };
@@ -2849,7 +2876,7 @@ var extension = /* @__PURE__ */ function() {
   var doReload = function(cache) {
     return function(ui) {
       return function(stateRef) {
-        return function __do2() {
+        return function __do3() {
           var state2 = loadState(cache)(stateRef)();
           var now = map1(UnixTS)(getUnix)();
           renderState(now)(ui)(state2)();
@@ -2862,16 +2889,12 @@ var extension = /* @__PURE__ */ function() {
     return function(ui) {
       return function(button) {
         return function(stateRef) {
-          return function __do2() {
+          return function __do3() {
             removeAll(button)();
             close(button)();
-            var halfItem = newItem("Reserve 30min")();
-            addMenuItem(button)(halfItem)();
-            var fullItem = newItem("Reserve 60min")();
-            addMenuItem(button)(fullItem)();
             var state2 = read(stateRef)();
             var removeEvent = function(event) {
-              return function __do3() {
+              return function __do4() {
                 var now2 = map1(UnixTS)(getUnix)();
                 var updatedState = modify(function(s) {
                   return {
@@ -2887,17 +2910,13 @@ var extension = /* @__PURE__ */ function() {
             };
             var now = map1(UnixTS)(getUnix)();
             var renderEventButton = function(event) {
-              return function __do3() {
+              return function __do4() {
                 var evItem = newItem("")();
-                var label = $$new5("")();
-                var countdown = $$new5("")();
+                var evUI = newUI();
                 var box = $$new3();
-                renderEvent(now)({
-                  countdown,
-                  label
-                })(event)();
-                add_child2(box)(countdown)();
-                add_child2(box)(label)();
+                renderEvent(now)(evUI)(event)();
+                add_child2(box)(evUI.countdown)();
+                add_child2(box)(evUI.label)();
                 add_child2(evItem)(box)();
                 connectActivate(evItem)(removeEvent(event))();
                 return addMenuItem(button)(evItem)();
@@ -2916,30 +2935,8 @@ var extension = /* @__PURE__ */ function() {
       };
     };
   };
-  var createMenuButton = function(ui) {
-    return function __do2() {
-      var box = $$new3();
-      var button = newButton(0)("OrgNextSchedule")(false)();
-      var calIcon = $$new2("x-office-calendar")();
-      var icon = $$new4();
-      add_style_class_name2(icon)("system-status-icon")();
-      set_gicon(icon)(calIcon)();
-      add_child2(box)(icon)();
-      add_child2(box)(ui.countdown)();
-      add_child2(box)(ui.label)();
-      add_child2(button)(box)();
-      set_y_align2(ui.label)(center)();
-      addToStatusArea("OrgNextSchedule")(button)();
-      return button;
-    };
-  };
-  var extension_enable = function __do2() {
-    var countdown = $$new5("")();
-    var label = $$new5("")();
-    var ui = {
-      countdown,
-      label
-    };
+  var extension_enable = function __do3() {
+    var ui = newUI();
     var cache = eventsPath();
     var stateRef = $$new({
       status: Waiting.value,
@@ -2947,7 +2944,7 @@ var extension = /* @__PURE__ */ function() {
       updated_at: 0
     })();
     var state2 = doReload(cache)(ui)(stateRef)();
-    var button = createMenuButton(ui)();
+    var button = topMenuUI(ui)();
     log2({
       msg: "enabled OrgNextSchedule",
       events: length(state2.events)

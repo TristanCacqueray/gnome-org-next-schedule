@@ -23,6 +23,7 @@ import Gio.ThemedIcon as ThemedIcon
 import Gnome.Extension (ExtensionSimple)
 import Gnome.UI.Main as Main
 import Gnome.UI.Main.Panel as Panel
+import Gnome.UI.PanelMenu (Button)
 import Gnome.UI.PanelMenu as PanelMenu
 import Gnome.UI.PopupMenu as PopupMenu
 import Safe.Coerce (coerce)
@@ -163,6 +164,32 @@ advanceState now currentState = do
 type UI
   = { label :: Label.Label, countdown :: Label.Label }
 
+newUI :: Effect UI
+newUI = do
+  countdown <- Label.new ""
+  label <- Label.new ""
+  pure { countdown, label }
+
+topMenuUI :: UI -> Effect Button
+topMenuUI ui = do
+  box <- BoxLayout.new
+  button <- PanelMenu.newButton 0.0 "OrgNextSchedule" false
+  -- create icon
+  calIcon <- ThemedIcon.new "x-office-calendar"
+  icon <- St.Icon.new
+  St.add_style_class_name icon "system-status-icon"
+  St.Icon.set_gicon icon calIcon
+  -- setup layout
+  Actor.add_child box icon
+  Actor.add_child box ui.countdown
+  Actor.add_child box ui.label
+  Actor.add_child button box
+  Actor.set_y_align ui.label ActorAlign.center
+  -- Actor.set_y_align ui.countdown ActorAlign.center
+  -- add to status bar
+  Panel.addToStatusArea "OrgNextSchedule" button
+  pure button
+
 renderEvent :: UnixTS -> UI -> Event -> Effect Unit
 renderEvent now ui ev = do
   let
@@ -194,7 +221,10 @@ worker cache ui stateRef = do
     Just state -> do
       case state.status of
         Alerting ev -> do
-          Main.notify (ev.what <> " starts in 5min") ""
+          let
+            msg = ev.what <> " starts in 5min"
+          GJS.log msg
+          Main.notify msg ""
         _ -> pure mempty
       Ref.write state stateRef
       pure state
@@ -220,12 +250,6 @@ extension = { extension_enable, extension_disable }
     PanelMenu.removeAll button
     PanelMenu.close button
     --
-    -- add basic action
-    halfItem <- PopupMenu.newItem "Reserve 30min"
-    PanelMenu.addMenuItem button halfItem
-    fullItem <- PopupMenu.newItem "Reserve 60min"
-    PanelMenu.addMenuItem button fullItem
-    --
     -- load state
     state <- Ref.read stateRef
     let
@@ -237,12 +261,11 @@ extension = { extension_enable, extension_disable }
     let
       renderEventButton event = do
         evItem <- PopupMenu.newItem ""
-        label <- Label.new ""
-        countdown <- Label.new ""
+        evUI <- newUI
         box <- BoxLayout.new
-        renderEvent now { countdown, label } event
-        Actor.add_child box countdown
-        Actor.add_child box label
+        renderEvent now evUI event
+        Actor.add_child box evUI.countdown
+        Actor.add_child box evUI.label
         Actor.add_child evItem box
         PopupMenu.connectActivate evItem (removeEvent event)
         PanelMenu.addMenuItem button evItem
@@ -259,32 +282,10 @@ extension = { extension_enable, extension_disable }
     PanelMenu.open button
     pure true
 
-  createMenuButton ui = do
-    box <- BoxLayout.new
-    button <- PanelMenu.newButton 0.0 "OrgNextSchedule" false
-    -- create icon
-    calIcon <- ThemedIcon.new "x-office-calendar"
-    icon <- St.Icon.new
-    St.add_style_class_name icon "system-status-icon"
-    St.Icon.set_gicon icon calIcon
-    -- setup layout
-    Actor.add_child box icon
-    Actor.add_child box ui.countdown
-    Actor.add_child box ui.label
-    Actor.add_child button box
-    Actor.set_y_align ui.label ActorAlign.center
-    -- Actor.set_y_align ui.countdown ActorAlign.center
-    -- add to status bar
-    Panel.addToStatusArea "OrgNextSchedule" button
-    pure button
-
   extension_enable = do
     --
     -- create top menu labels
-    countdown <- Label.new ""
-    label <- Label.new ""
-    let
-      ui = { countdown, label }
+    ui <- newUI
     --
     -- create state
     cache <- eventsPath
@@ -292,7 +293,7 @@ extension = { extension_enable, extension_disable }
     state <- doReload cache ui stateRef
     --
     -- create menu
-    button <- createMenuButton ui
+    button <- topMenuUI ui
     GJS.log { msg: "enabled OrgNextSchedule", events: length state.events }
     void $ Actor.onButtonPressEvent button (\_ _ -> onMenuClick cache ui button stateRef)
     --
