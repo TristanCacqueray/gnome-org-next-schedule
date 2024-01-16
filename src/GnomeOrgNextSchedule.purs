@@ -1,7 +1,6 @@
 module GnomeOrgNextSchedule where
 
 import Prelude
-
 import Clutter.Actor as Actor
 import Clutter.ActorAlign as ActorAlign
 import Data.Array (drop, filter, head, length)
@@ -70,8 +69,8 @@ parseEvents lines = sequence (toEvent <$> filter (not <<< String.null) (split (c
     pure { when, what }
 
 -- | Load events from cache file
-loadEvents :: String -> Effect (Array Event)
-loadEvents fp = do
+loadEvents :: EventsPath -> Effect (Array Event)
+loadEvents (EventsPath fp) = do
   content <- Gio.File.readFileSync fp
   case content of
     Left err -> do
@@ -90,39 +89,75 @@ data Status
 type State
   = { status :: Status
     , events :: Array Event
+    , updated_at :: UnixTS
     }
 
 newState :: UnixTS -> Array Event -> State
-newState now baseEvents = { status, events }
+newState now baseEvents = { status, events, updated_at }
   where
-    events = filter (\ev -> ev.when >= now) baseEvents
-    status = Waiting
+  updated_at = now
 
-updateState :: Ref State -> Effect State
-updateState stateRef = do
-    home <- fromMaybe "/homeless" <$> getenv "HOME"
-    let
-      cache = home <> "/.local/share/gnome-org-next-schedule/events"
-    events <- loadEvents cache
-    -- state
-    now <- UnixTS <$> getUnix
-    let state = newState now events
-    Ref.write state stateRef
+  events = filter (\ev -> ev.when >= now) baseEvents
+
+  status = Waiting
+
+readState :: EventsPath -> Effect State
+readState cache = do
+  now <- UnixTS <$> getUnix
+  events <- loadEvents cache
+  pure $ newState now events
+
+newtype EventsPath
+  = EventsPath String
+
+eventsPath :: Effect EventsPath
+eventsPath = do
+  home <- fromMaybe "/homeless" <$> getenv "HOME"
+  pure $ EventsPath $ home <> "/.local/share/gnome-org-next-schedule/events"
+
+getModifiedDate :: EventsPath -> Effect UnixTS
+getModifiedDate (EventsPath path) = do
+  file_update <- Gio.File.getModificationDateTime path
+  pure
+    $ case file_update of
+        Nothing -> UnixTS 0
+        Just ts -> UnixTS $ to_unix ts
+
+loadState :: EventsPath -> Ref State -> Effect State
+loadState cache stateRef = do
+  GJS.log "Loading gnome-org-next-schedule events"
+  state <- readState cache
+  Ref.write state stateRef
+  pure state
+
+-- | Reload state when the file changes
+updateState :: EventsPath -> UnixTS -> Ref State -> Effect State
+updateState cache now stateRef = do
+  state <- Ref.read stateRef
+  if (now - state.updated_at <= UnixTS 61) then
     pure state
+  else do
+    path <- eventsPath
+    ts <- getModifiedDate path
+    if ts <= state.updated_at then
+      pure state
+    else
+      loadState cache stateRef
 
 -- | Warn 5 minutes before event starts
 alarmTime :: UnixTS
 alarmTime = UnixTS 300
 
+-- | Check for upcoming alert or expired event
 advanceState :: UnixTS -> State -> Maybe State
 advanceState now currentState = do
   nextEvent <- head currentState.events
   if now > nextEvent.when then
     -- Advance to the next event
-    pure { status: Waiting, events: drop 1 currentState.events }
+    pure $ currentState { status = Waiting, events = drop 1 currentState.events }
   else case currentState.status of
     Waiting
-      | nextEvent.when - now <= alarmTime -> pure { status: Alerting nextEvent, events: currentState.events }
+      | nextEvent.when - now <= alarmTime -> pure $ currentState { status = Alerting nextEvent }
     _ -> Nothing
 
 type UI
@@ -150,17 +185,17 @@ renderState now ui state = case head state.events of
     Label.set_text ui.label "No schedule :("
   Just ev -> renderEvent now ui ev
 
-worker :: UI -> Ref State -> Effect Boolean
-worker ui stateRef = do
+worker :: EventsPath -> UI -> Ref State -> Effect Boolean
+worker cache ui stateRef = do
   now <- UnixTS <$> getUnix
-  currentState <- Ref.read stateRef
+  currentState <- updateState cache now stateRef
   state <- case advanceState now currentState of
     Nothing -> Ref.read stateRef
     Just state -> do
       case state.status of
-           Alerting ev -> do
-             Main.notify (ev.what <> " starts in 5min") ""
-           _ -> pure mempty
+        Alerting ev -> do
+          Main.notify (ev.what <> " starts in 5min") ""
+        _ -> pure mempty
       Ref.write state stateRef
       pure state
   renderState now ui state
@@ -174,14 +209,13 @@ type Env
 extension :: ExtensionSimple Env
 extension = { extension_enable, extension_disable }
   where
-  doReload ui stateRef = do
-    GJS.log "Reloading gnome-org-next-schedule"
-    state <- updateState stateRef
+  doReload cache ui stateRef = do
+    state <- loadState cache stateRef
     now <- UnixTS <$> getUnix
     renderState now ui state
     pure state
 
-  onMenuClick ui button stateRef = do
+  onMenuClick cache ui button stateRef = do
     -- clear previous menu
     PanelMenu.removeAll button
     PanelMenu.close button
@@ -197,9 +231,8 @@ extension = { extension_enable, extension_disable }
     let
       removeEvent event = do
         now <- UnixTS <$> getUnix
-        updatedState <- Ref.modify (\s -> { status: s.status, events: filter (\ev -> ev /= event) s.events }) stateRef
+        updatedState <- Ref.modify (\s -> s { events = filter (\ev -> ev /= event) s.events }) stateRef
         renderState now ui updatedState
-
     now <- UnixTS <$> getUnix
     let
       renderEventButton event = do
@@ -217,7 +250,7 @@ extension = { extension_enable, extension_disable }
     --
     -- reload button
     menuItem <- PopupMenu.newItem ""
-    PopupMenu.connectActivate menuItem (void $ doReload ui stateRef)
+    PopupMenu.connectActivate menuItem (void $ doReload cache ui stateRef)
     reloadLabel <- St.Label.new "reload"
     Actor.add_child menuItem reloadLabel
     PanelMenu.addMenuItem button menuItem
@@ -254,16 +287,17 @@ extension = { extension_enable, extension_disable }
       ui = { countdown, label }
     --
     -- create state
-    stateRef <- Ref.new { status: Waiting, events: [] }
-    state <- doReload ui stateRef
+    cache <- eventsPath
+    stateRef <- Ref.new { status: Waiting, events: [], updated_at: UnixTS 0 }
+    state <- doReload cache ui stateRef
     --
     -- create menu
     button <- createMenuButton ui
-    GJS.log {msg: "enabled OrgNextSchedule", events: length state.events}
-    void $ Actor.onButtonPressEvent button (\_ _ -> onMenuClick ui button stateRef)
+    GJS.log { msg: "enabled OrgNextSchedule", events: length state.events }
+    void $ Actor.onButtonPressEvent button (\_ _ -> onMenuClick cache ui button stateRef)
     --
     -- start worker
-    timer <- GLib.timeoutAdd 5000 (worker ui stateRef)
+    timer <- GLib.timeoutAdd 30000 (worker cache ui stateRef)
     pure { button, timer }
 
   extension_disable env = do

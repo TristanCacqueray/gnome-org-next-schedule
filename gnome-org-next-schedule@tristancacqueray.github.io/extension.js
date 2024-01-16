@@ -104,10 +104,10 @@ var apply = function(dict) {
 };
 var applySecond = function(dictApply) {
   var apply1 = apply(dictApply);
-  var map8 = map(dictApply.Functor0());
+  var map9 = map(dictApply.Functor0());
   return function(a) {
     return function(b) {
-      return apply1(map8($$const(identity2))(a))(b);
+      return apply1(map9($$const(identity2))(a))(b);
     };
   };
 };
@@ -1067,7 +1067,7 @@ var traverseArrayImpl = function() {
     };
   }
   return function(apply2) {
-    return function(map8) {
+    return function(map9) {
       return function(pure4) {
         return function(f) {
           return function(array) {
@@ -1076,14 +1076,14 @@ var traverseArrayImpl = function() {
                 case 0:
                   return pure4([]);
                 case 1:
-                  return map8(array1)(f(array[bot]));
+                  return map9(array1)(f(array[bot]));
                 case 2:
-                  return apply2(map8(array2)(f(array[bot])))(f(array[bot + 1]));
+                  return apply2(map9(array2)(f(array[bot])))(f(array[bot + 1]));
                 case 3:
-                  return apply2(apply2(map8(array3)(f(array[bot])))(f(array[bot + 1])))(f(array[bot + 2]));
+                  return apply2(apply2(map9(array3)(f(array[bot])))(f(array[bot + 1])))(f(array[bot + 2]));
                 default:
                   var pivot = bot + Math.floor((top2 - bot) / 4) * 2;
-                  return apply2(map8(concat2)(go(bot, pivot)))(go(pivot, top2));
+                  return apply2(map9(concat2)(go(bot, pivot)))(go(pivot, top2));
               }
             }
             return go(0, array.length);
@@ -2449,6 +2449,14 @@ var load_contents_impl = (file) => (cancellable) => () => {
   const contentsString = decoder.decode(contents);
   return contentsString;
 };
+var get_modification_date_time_impl = (file) => () => {
+  try {
+    const file_info = file.query_info("*", 0, null);
+    return file_info.get_modification_date_time();
+  } catch (e) {
+    return null;
+  }
+};
 
 // output/Gio.Raw.File/index.js
 var load_contents = function(file) {
@@ -2458,10 +2466,17 @@ var load_contents = function(file) {
 };
 
 // output/Gio.File/index.js
+var map7 = /* @__PURE__ */ map(functorEffect);
 var readFileSync = function(path) {
-  return function __do() {
+  return function __do2() {
     var file = new_for_path(path)();
     return load_contents(file)(toNullable(Nothing.value))();
+  };
+};
+var getModificationDateTime = function(path) {
+  return function __do2() {
+    var file = new_for_path(path)();
+    return map7(toMaybe)(get_modification_date_time_impl(file))();
   };
 };
 
@@ -2532,7 +2547,7 @@ var div3 = /* @__PURE__ */ div(euclideanRingInt);
 var bind2 = /* @__PURE__ */ bind(bindEither);
 var pure3 = /* @__PURE__ */ pure(applicativeEither);
 var sequence2 = /* @__PURE__ */ sequence(traversableArray)(applicativeEither);
-var map7 = /* @__PURE__ */ map(functorArray);
+var map8 = /* @__PURE__ */ map(functorArray);
 var coerce2 = /* @__PURE__ */ coerce();
 var map1 = /* @__PURE__ */ map(functorEffect);
 var bind22 = /* @__PURE__ */ bind(bindMaybe);
@@ -2546,6 +2561,9 @@ var add_style_class_name2 = /* @__PURE__ */ add_style_class_name();
 var set_y_align2 = /* @__PURE__ */ set_y_align();
 var onButtonPressEvent2 = /* @__PURE__ */ onButtonPressEvent();
 var UnixTS = function(x) {
+  return x;
+};
+var EventsPath = function(x) {
   return x;
 };
 var Waiting = /* @__PURE__ */ function() {
@@ -2589,9 +2607,9 @@ var renderEvent = function(now) {
           return show2(div3(v)(3600 * 24 | 0)) + "d";
         }
         ;
-        throw new Error("Failed pattern match at GnomeOrgNextSchedule (line 138, column 5 - line 142, column 57): " + []);
+        throw new Error("Failed pattern match at GnomeOrgNextSchedule (line 173, column 5 - line 177, column 57): " + []);
       }();
-      return function __do() {
+      return function __do2() {
         set_text(ui.countdown)(countdown)();
         return set_text(ui.label)(ev.what)();
       };
@@ -2603,7 +2621,7 @@ var renderState = function(now) {
     return function(state2) {
       var v = head(state2.events);
       if (v instanceof Nothing) {
-        return function __do() {
+        return function __do2() {
           set_text(ui.countdown)("x")();
           return set_text(ui.label)("No schedule :(")();
         };
@@ -2613,7 +2631,7 @@ var renderState = function(now) {
         return renderEvent(now)(ui)(v.value0);
       }
       ;
-      throw new Error("Failed pattern match at GnomeOrgNextSchedule (line 147, column 28 - line 151, column 35): " + [v.constructor.name]);
+      throw new Error("Failed pattern match at GnomeOrgNextSchedule (line 182, column 28 - line 186, column 35): " + [v.constructor.name]);
     };
   };
 };
@@ -2629,7 +2647,7 @@ var parseEvents = function(lines) {
         return pure3(v.value0);
       }
       ;
-      throw new Error("Failed pattern match at GnomeOrgNextSchedule (line 58, column 15 - line 60, column 23): " + [v.constructor.name]);
+      throw new Error("Failed pattern match at GnomeOrgNextSchedule (line 57, column 15 - line 59, column 23): " + [v.constructor.name]);
     }())(function(sepPos) {
       var v = splitAt2(sepPos)(line);
       return bind2(function() {
@@ -2642,7 +2660,7 @@ var parseEvents = function(lines) {
           return pure3(v1.value0);
         }
         ;
-        throw new Error("Failed pattern match at GnomeOrgNextSchedule (line 63, column 13 - line 65, column 23): " + [v1.constructor.name]);
+        throw new Error("Failed pattern match at GnomeOrgNextSchedule (line 62, column 13 - line 64, column 23): " + [v1.constructor.name]);
       }())(function(date) {
         var when2 = to_unix(date);
         return pure3({
@@ -2652,14 +2670,14 @@ var parseEvents = function(lines) {
       });
     });
   };
-  return sequence2(map7(toEvent)(filter(function($78) {
-    return !$$null($78);
+  return sequence2(map8(toEvent)(filter(function($89) {
+    return !$$null($89);
   })(split(coerce2("\n"))(lines))));
 };
 var ordUnixTS = ordInt;
 var greaterThanOrEq2 = /* @__PURE__ */ greaterThanOrEq(ordUnixTS);
-var greaterThan2 = /* @__PURE__ */ greaterThan(ordUnixTS);
 var lessThanOrEq2 = /* @__PURE__ */ lessThanOrEq(ordUnixTS);
+var greaterThan2 = /* @__PURE__ */ greaterThan(ordUnixTS);
 var newState = function(now) {
   return function(baseEvents) {
     var events = filter(function(ev) {
@@ -2667,44 +2685,91 @@ var newState = function(now) {
     })(baseEvents);
     return {
       status: Waiting.value,
-      events
+      events,
+      updated_at: now
     };
   };
 };
-var loadEvents = function(fp) {
-  return function __do() {
-    var content = readFileSync(fp)();
+var loadEvents = function(v) {
+  return function __do2() {
+    var content = readFileSync(v)();
     if (content instanceof Left) {
       warn(new Tuple("Could not read events", content.value0))();
       return [];
     }
     ;
     if (content instanceof Right) {
-      var v = parseEvents(content.value0);
-      if (v instanceof Left) {
-        warn("Failed to parse: " + (v.value0 + ("\n" + content.value0)))();
+      var v1 = parseEvents(content.value0);
+      if (v1 instanceof Left) {
+        warn("Failed to parse: " + (v1.value0 + ("\n" + content.value0)))();
         return [];
       }
       ;
-      if (v instanceof Right) {
-        return v.value0;
+      if (v1 instanceof Right) {
+        return v1.value0;
       }
       ;
-      throw new Error("Failed pattern match at GnomeOrgNextSchedule (line 80, column 18 - line 84, column 26): " + [v.constructor.name]);
+      throw new Error("Failed pattern match at GnomeOrgNextSchedule (line 79, column 18 - line 83, column 26): " + [v1.constructor.name]);
     }
     ;
-    throw new Error("Failed pattern match at GnomeOrgNextSchedule (line 76, column 3 - line 84, column 26): " + [content.constructor.name]);
+    throw new Error("Failed pattern match at GnomeOrgNextSchedule (line 75, column 3 - line 83, column 26): " + [content.constructor.name]);
   };
 };
-var updateState = function(stateRef) {
-  return function __do() {
-    var home = map1(fromMaybe("/homeless"))(getenv("HOME"))();
-    var cache = home + "/.local/share/gnome-org-next-schedule/events";
-    var events = loadEvents(cache)();
+var readState = function(cache) {
+  return function __do2() {
     var now = map1(UnixTS)(getUnix)();
-    var state2 = newState(now)(events);
-    write(state2)(stateRef)();
-    return state2;
+    var events = loadEvents(cache)();
+    return newState(now)(events);
+  };
+};
+var loadState = function(cache) {
+  return function(stateRef) {
+    return function __do2() {
+      log2("Loading gnome-org-next-schedule events")();
+      var state2 = readState(cache)();
+      write(state2)(stateRef)();
+      return state2;
+    };
+  };
+};
+var getModifiedDate = function(v) {
+  return function __do2() {
+    var file_update = getModificationDateTime(v)();
+    if (file_update instanceof Nothing) {
+      return 0;
+    }
+    ;
+    if (file_update instanceof Just) {
+      return to_unix(file_update.value0);
+    }
+    ;
+    throw new Error("Failed pattern match at GnomeOrgNextSchedule (line 122, column 7 - line 124, column 39): " + [file_update.constructor.name]);
+  };
+};
+var eventsPath = function __do() {
+  var home = map1(fromMaybe("/homeless"))(getenv("HOME"))();
+  return home + "/.local/share/gnome-org-next-schedule/events";
+};
+var updateState = function(cache) {
+  return function(now) {
+    return function(stateRef) {
+      return function __do2() {
+        var state2 = read(stateRef)();
+        var $81 = lessThanOrEq2(sub2(now)(state2.updated_at))(61);
+        if ($81) {
+          return state2;
+        }
+        ;
+        var path = eventsPath();
+        var ts = getModifiedDate(path)();
+        var $82 = lessThanOrEq2(ts)(state2.updated_at);
+        if ($82) {
+          return state2;
+        }
+        ;
+        return loadState(cache)(stateRef)();
+      };
+    };
   };
 };
 var eqUnixTS = eqInt;
@@ -2721,9 +2786,10 @@ var alarmTime = 300;
 var advanceState = function(now) {
   return function(currentState) {
     return bind22(head(currentState.events))(function(nextEvent) {
-      var $72 = greaterThan2(now)(nextEvent.when);
-      if ($72) {
+      var $83 = greaterThan2(now)(nextEvent.when);
+      if ($83) {
         return pure22({
+          updated_at: currentState.updated_at,
           status: Waiting.value,
           events: drop(1)(currentState.events)
         });
@@ -2731,8 +2797,9 @@ var advanceState = function(now) {
       ;
       if (currentState.status instanceof Waiting && lessThanOrEq2(sub2(nextEvent.when)(now))(alarmTime)) {
         return pure22({
-          status: new Alerting(nextEvent),
-          events: currentState.events
+          events: currentState.events,
+          updated_at: currentState.updated_at,
+          status: new Alerting(nextEvent)
         });
       }
       ;
@@ -2740,111 +2807,117 @@ var advanceState = function(now) {
     });
   };
 };
-var worker = function(ui) {
-  return function(stateRef) {
-    return function __do() {
-      var now = map1(UnixTS)(getUnix)();
-      var currentState = read(stateRef)();
-      var state2 = function() {
-        var v = advanceState(now)(currentState);
-        if (v instanceof Nothing) {
-          return read(stateRef)();
-        }
-        ;
-        if (v instanceof Just) {
-          (function() {
-            if (v.value0.status instanceof Alerting) {
-              return notify2(v.value0.status.value0.what + " starts in 5min")("")();
-            }
-            ;
-            return mempty2;
-          })();
-          write(v.value0)(stateRef)();
-          return v.value0;
-        }
-        ;
-        throw new Error("Failed pattern match at GnomeOrgNextSchedule (line 157, column 12 - line 165, column 17): " + [v.constructor.name]);
-      }();
-      renderState(now)(ui)(state2)();
-      return true;
+var worker = function(cache) {
+  return function(ui) {
+    return function(stateRef) {
+      return function __do2() {
+        var now = map1(UnixTS)(getUnix)();
+        var currentState = updateState(cache)(now)(stateRef)();
+        var state2 = function() {
+          var v = advanceState(now)(currentState);
+          if (v instanceof Nothing) {
+            return read(stateRef)();
+          }
+          ;
+          if (v instanceof Just) {
+            (function() {
+              if (v.value0.status instanceof Alerting) {
+                return notify2(v.value0.status.value0.what + " starts in 5min")("")();
+              }
+              ;
+              return mempty2;
+            })();
+            write(v.value0)(stateRef)();
+            return v.value0;
+          }
+          ;
+          throw new Error("Failed pattern match at GnomeOrgNextSchedule (line 192, column 12 - line 200, column 17): " + [v.constructor.name]);
+        }();
+        renderState(now)(ui)(state2)();
+        return true;
+      };
     };
   };
 };
 var extension = /* @__PURE__ */ function() {
   var extension_disable = function(env) {
-    return function __do() {
+    return function __do2() {
       sourceRemove(env.timer)();
       return destroy2(env.button)();
     };
   };
-  var doReload = function(ui) {
-    return function(stateRef) {
-      return function __do() {
-        log2("Reloading gnome-org-next-schedule")();
-        var state2 = updateState(stateRef)();
-        var now = map1(UnixTS)(getUnix)();
-        renderState(now)(ui)(state2)();
-        return state2;
+  var doReload = function(cache) {
+    return function(ui) {
+      return function(stateRef) {
+        return function __do2() {
+          var state2 = loadState(cache)(stateRef)();
+          var now = map1(UnixTS)(getUnix)();
+          renderState(now)(ui)(state2)();
+          return state2;
+        };
       };
     };
   };
-  var onMenuClick = function(ui) {
-    return function(button) {
-      return function(stateRef) {
-        return function __do() {
-          removeAll(button)();
-          close(button)();
-          var halfItem = newItem("Reserve 30min")();
-          addMenuItem(button)(halfItem)();
-          var fullItem = newItem("Reserve 60min")();
-          addMenuItem(button)(fullItem)();
-          var state2 = read(stateRef)();
-          var removeEvent = function(event) {
-            return function __do2() {
-              var now2 = map1(UnixTS)(getUnix)();
-              var updatedState = modify(function(s) {
-                return {
-                  status: s.status,
-                  events: filter(function(ev) {
-                    return notEq2(ev)(event);
-                  })(s.events)
-                };
-              })(stateRef)();
-              return renderState(now2)(ui)(updatedState)();
+  var onMenuClick = function(cache) {
+    return function(ui) {
+      return function(button) {
+        return function(stateRef) {
+          return function __do2() {
+            removeAll(button)();
+            close(button)();
+            var halfItem = newItem("Reserve 30min")();
+            addMenuItem(button)(halfItem)();
+            var fullItem = newItem("Reserve 60min")();
+            addMenuItem(button)(fullItem)();
+            var state2 = read(stateRef)();
+            var removeEvent = function(event) {
+              return function __do3() {
+                var now2 = map1(UnixTS)(getUnix)();
+                var updatedState = modify(function(s) {
+                  return {
+                    status: s.status,
+                    updated_at: s.updated_at,
+                    events: filter(function(ev) {
+                      return notEq2(ev)(event);
+                    })(s.events)
+                  };
+                })(stateRef)();
+                return renderState(now2)(ui)(updatedState)();
+              };
             };
-          };
-          var now = map1(UnixTS)(getUnix)();
-          var renderEventButton = function(event) {
-            return function __do2() {
-              var evItem = newItem("")();
-              var label = $$new5("")();
-              var countdown = $$new5("")();
-              var box = $$new3();
-              renderEvent(now)({
-                countdown,
-                label
-              })(event)();
-              add_child2(box)(countdown)();
-              add_child2(box)(label)();
-              add_child2(evItem)(box)();
-              connectActivate(evItem)(removeEvent(event))();
-              return addMenuItem(button)(evItem)();
+            var now = map1(UnixTS)(getUnix)();
+            var renderEventButton = function(event) {
+              return function __do3() {
+                var evItem = newItem("")();
+                var label = $$new5("")();
+                var countdown = $$new5("")();
+                var box = $$new3();
+                renderEvent(now)({
+                  countdown,
+                  label
+                })(event)();
+                add_child2(box)(countdown)();
+                add_child2(box)(label)();
+                add_child2(evItem)(box)();
+                connectActivate(evItem)(removeEvent(event))();
+                return addMenuItem(button)(evItem)();
+              };
             };
+            traverse_2(renderEventButton)(state2.events)();
+            var menuItem = newItem("")();
+            connectActivate(menuItem)($$void2(doReload(cache)(ui)(stateRef)))();
+            var reloadLabel = $$new5("reload")();
+            add_child2(menuItem)(reloadLabel)();
+            addMenuItem(button)(menuItem)();
+            open(button)();
+            return true;
           };
-          traverse_2(renderEventButton)(state2.events)();
-          var menuItem = newItem("")();
-          connectActivate(menuItem)($$void2(doReload(ui)(stateRef)))();
-          var reloadLabel = $$new5("reload")();
-          add_child2(menuItem)(reloadLabel)();
-          addMenuItem(button)(menuItem)();
-          open(button)();
-          return true;
         };
       };
     };
   };
   var createMenuButton = function(ui) {
-    return function __do() {
+    return function __do2() {
       var box = $$new3();
       var button = newButton(0)("OrgNextSchedule")(false)();
       var calIcon = $$new2("x-office-calendar")();
@@ -2860,18 +2933,20 @@ var extension = /* @__PURE__ */ function() {
       return button;
     };
   };
-  var extension_enable = function __do() {
+  var extension_enable = function __do2() {
     var countdown = $$new5("")();
     var label = $$new5("")();
     var ui = {
       countdown,
       label
     };
+    var cache = eventsPath();
     var stateRef = $$new({
       status: Waiting.value,
-      events: []
+      events: [],
+      updated_at: 0
     })();
-    var state2 = doReload(ui)(stateRef)();
+    var state2 = doReload(cache)(ui)(stateRef)();
     var button = createMenuButton(ui)();
     log2({
       msg: "enabled OrgNextSchedule",
@@ -2879,10 +2954,10 @@ var extension = /* @__PURE__ */ function() {
     })();
     $$void2(onButtonPressEvent2(button)(function(v) {
       return function(v1) {
-        return onMenuClick(ui)(button)(stateRef);
+        return onMenuClick(cache)(ui)(button)(stateRef);
       };
     }))();
-    var timer = timeoutAdd(5e3)(worker(ui)(stateRef))();
+    var timer = timeoutAdd(3e4)(worker(cache)(ui)(stateRef))();
     return {
       button,
       timer
