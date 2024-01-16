@@ -7,6 +7,8 @@ and triggers a notification five minutes before.
 
 ![screenshot](./screenshot.png)
 
+This extension is best used with [org-mode][org-mode] superior scheduling capabilities,
+for regular gnome calendar, see <https://github.com/chmouel/gnome-next-meeting-applet>.
 
 # Usage
 
@@ -76,4 +78,5 @@ Checkout the [purescript-gjs][purescript-gjs] bindings too.
 
 [purescript]: https://www.purescript.org/
 [purescript-gjs]: https://github.com/purescript-gjs/purescript-gjs
+[org-mode]: https://orgmode.org/
 [org-ql]: https://github.com/alphapapa/org-ql
