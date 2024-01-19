@@ -5,7 +5,9 @@ import Clutter.Actor as Actor
 import Clutter.ActorAlign as ActorAlign
 import Data.Array (drop, filter, head, length)
 import Data.Either (Either(..))
+import Data.Int (floor, toNumber)
 import Data.Maybe (Maybe(..), fromMaybe)
+import Data.Number (remainder)
 import Data.String (Pattern(..), indexOf, splitAt)
 import Data.String as String
 import Data.String.Common (split)
@@ -193,15 +195,31 @@ topMenuUI ui = do
 renderEvent :: UnixTS -> UI -> Event -> Effect Unit
 renderEvent now ui ev = do
   let
-    UnixTS diffms = ev.when - now
+    UnixTS diffSec = ev.when - now
 
-    diff = diffms
+    diff = toNumber diffSec
+
+    hour = 3600.0
+
+    day = hour * 24.0
+
+    showR = show <<< floor
+
+    showM v = do
+      let
+        s = showR v
+      case String.length s of
+        1 -> "0" <> s
+        _ -> s
 
     countdown
-      | diff < 60 = show diff <> "s"
-      | diff < 3600 = show (diff `div` 60) <> "m"
-      | diff < (3600 * 24) = show (diff `div` 3600) <> "h"
-      | otherwise = show (diff `div` (3600 * 24)) <> "d"
+      | diff < 60.0 = "GO"
+      | diff < hour = showR (diff `div` 60.0) <> "m"
+      | diff < day =
+        showR (diff `div` hour)
+          <> "h"
+          <> showM ((diff `remainder` hour) `div` 60.0)
+      | otherwise = showR (diff `div` day) <> "d"
   Label.set_text ui.countdown countdown
   Label.set_text ui.label ev.what
 

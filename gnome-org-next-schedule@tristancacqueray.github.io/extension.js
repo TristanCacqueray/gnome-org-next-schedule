@@ -271,6 +271,8 @@ var ap = function(dictMonad) {
 };
 
 // output/Data.Bounded/foreign.js
+var topInt = 2147483647;
+var bottomInt = -2147483648;
 var topChar = String.fromCharCode(65535);
 var bottomChar = String.fromCharCode(0);
 var topNumber = Number.POSITIVE_INFINITY;
@@ -494,6 +496,13 @@ var lessThanOrEq = function(dictOrd) {
 // output/Data.Bounded/index.js
 var top = function(dict) {
   return dict.top;
+};
+var boundedInt = {
+  top: topInt,
+  bottom: bottomInt,
+  Ord0: function() {
+    return ordInt;
+  }
 };
 var boundedChar = {
   top: topChar,
@@ -1071,8 +1080,8 @@ var traverseArrayImpl = function() {
       return function(pure3) {
         return function(f) {
           return function(array) {
-            function go(bot, top2) {
-              switch (top2 - bot) {
+            function go(bot, top3) {
+              switch (top3 - bot) {
                 case 0:
                   return pure3([]);
                 case 1:
@@ -1082,8 +1091,8 @@ var traverseArrayImpl = function() {
                 case 3:
                   return apply2(apply2(map9(array3)(f(array[bot])))(f(array[bot + 1])))(f(array[bot + 2]));
                 default:
-                  var pivot = bot + Math.floor((top2 - bot) / 4) * 2;
-                  return apply2(map9(concat2)(go(bot, pivot)))(go(pivot, top2));
+                  var pivot = bot + Math.floor((top3 - bot) / 4) * 2;
+                  return apply2(map9(concat2)(go(bot, pivot)))(go(pivot, top3));
               }
             }
             return go(0, array.length);
@@ -1210,6 +1219,56 @@ var drop = function(n) {
   };
 };
 
+// output/Data.Int/foreign.js
+var fromNumberImpl = function(just) {
+  return function(nothing) {
+    return function(n) {
+      return (n | 0) === n ? just(n) : nothing;
+    };
+  };
+};
+var toNumber = function(n) {
+  return n;
+};
+
+// output/Data.Number/foreign.js
+var isFiniteImpl = isFinite;
+var floor = Math.floor;
+var remainder = function(n) {
+  return function(m) {
+    return n % m;
+  };
+};
+
+// output/Data.Int/index.js
+var top2 = /* @__PURE__ */ top(boundedInt);
+var bottom2 = /* @__PURE__ */ bottom(boundedInt);
+var fromNumber = /* @__PURE__ */ function() {
+  return fromNumberImpl(Just.create)(Nothing.value);
+}();
+var unsafeClamp = function(x) {
+  if (!isFiniteImpl(x)) {
+    return 0;
+  }
+  ;
+  if (x >= toNumber(top2)) {
+    return top2;
+  }
+  ;
+  if (x <= toNumber(bottom2)) {
+    return bottom2;
+  }
+  ;
+  if (otherwise) {
+    return fromMaybe(0)(fromNumber(x));
+  }
+  ;
+  throw new Error("Failed pattern match at Data.Int (line 72, column 1 - line 72, column 29): " + [x.constructor.name]);
+};
+var floor2 = function($39) {
+  return unsafeClamp(floor($39));
+};
+
 // output/Data.String.CodePoints/foreign.js
 var hasArrayFrom = typeof Array.from === "function";
 var hasStringIterator = typeof Symbol !== "undefined" && Symbol != null && typeof Symbol.iterator !== "undefined" && typeof String.prototype[Symbol.iterator] === "function";
@@ -1272,7 +1331,7 @@ var fromEnum = function(dict) {
 var toEnumWithDefaults = function(dictBoundedEnum) {
   var toEnum1 = toEnum(dictBoundedEnum);
   var fromEnum1 = fromEnum(dictBoundedEnum);
-  var bottom2 = bottom(dictBoundedEnum.Bounded0());
+  var bottom22 = bottom(dictBoundedEnum.Bounded0());
   return function(low) {
     return function(high) {
       return function(x) {
@@ -1282,7 +1341,7 @@ var toEnumWithDefaults = function(dictBoundedEnum) {
         }
         ;
         if (v instanceof Nothing) {
-          var $140 = x < fromEnum1(bottom2);
+          var $140 = x < fromEnum1(bottom22);
           if ($140) {
             return low;
           }
@@ -2546,7 +2605,6 @@ var add_style_class_name2 = /* @__PURE__ */ add_style_class_name();
 var add_child2 = /* @__PURE__ */ add_child()();
 var set_y_align2 = /* @__PURE__ */ set_y_align();
 var show2 = /* @__PURE__ */ show(showInt);
-var div3 = /* @__PURE__ */ div(euclideanRingInt);
 var bind1 = /* @__PURE__ */ bind(bindEither);
 var pure1 = /* @__PURE__ */ pure(applicativeEither);
 var sequence2 = /* @__PURE__ */ sequence(traversableArray)(applicativeEither);
@@ -2607,24 +2665,38 @@ var renderEvent = function(now) {
   return function(ui) {
     return function(ev) {
       var v = sub2(ev.when)(now);
+      var showR = function($91) {
+        return show2(floor2($91));
+      };
+      var showM = function(v1) {
+        var s = showR(v1);
+        var v2 = length3(s);
+        if (v2 === 1) {
+          return "0" + s;
+        }
+        ;
+        return s;
+      };
+      var diff = toNumber(v);
+      var day = 3600 * 24;
       var countdown = function() {
-        if (v < 60) {
-          return show2(v) + "s";
+        if (diff < 60) {
+          return "GO";
         }
         ;
-        if (v < 3600) {
-          return show2(div3(v)(60)) + "m";
+        if (diff < 3600) {
+          return showR(diff / 60) + "m";
         }
         ;
-        if (v < (3600 * 24 | 0)) {
-          return show2(div3(v)(3600)) + "h";
+        if (diff < day) {
+          return showR(diff / 3600) + ("h" + showM(remainder(diff)(3600) / 60));
         }
         ;
         if (otherwise) {
-          return show2(div3(v)(3600 * 24 | 0)) + "d";
+          return showR(diff / day) + "d";
         }
         ;
-        throw new Error("Failed pattern match at GnomeOrgNextSchedule (line 200, column 5 - line 204, column 57): " + []);
+        throw new Error("Failed pattern match at GnomeOrgNextSchedule (line 215, column 5 - line 222, column 50): " + []);
       }();
       return function __do3() {
         set_text(ui.countdown)(countdown)();
@@ -2648,7 +2720,7 @@ var renderState = function(now) {
         return renderEvent(now)(ui)(v.value0);
       }
       ;
-      throw new Error("Failed pattern match at GnomeOrgNextSchedule (line 209, column 28 - line 213, column 35): " + [v.constructor.name]);
+      throw new Error("Failed pattern match at GnomeOrgNextSchedule (line 227, column 28 - line 231, column 35): " + [v.constructor.name]);
     };
   };
 };
@@ -2664,7 +2736,7 @@ var parseEvents = function(lines) {
         return pure1(v.value0);
       }
       ;
-      throw new Error("Failed pattern match at GnomeOrgNextSchedule (line 58, column 15 - line 60, column 23): " + [v.constructor.name]);
+      throw new Error("Failed pattern match at GnomeOrgNextSchedule (line 60, column 15 - line 62, column 23): " + [v.constructor.name]);
     }())(function(sepPos) {
       var v = splitAt2(sepPos)(line);
       return bind1(function() {
@@ -2677,7 +2749,7 @@ var parseEvents = function(lines) {
           return pure1(v1.value0);
         }
         ;
-        throw new Error("Failed pattern match at GnomeOrgNextSchedule (line 63, column 13 - line 65, column 23): " + [v1.constructor.name]);
+        throw new Error("Failed pattern match at GnomeOrgNextSchedule (line 65, column 13 - line 67, column 23): " + [v1.constructor.name]);
       }())(function(date) {
         var when2 = to_unix(date);
         return pure1({
@@ -2687,8 +2759,8 @@ var parseEvents = function(lines) {
       });
     });
   };
-  return sequence2(map8(toEvent)(filter(function($89) {
-    return !$$null($89);
+  return sequence2(map8(toEvent)(filter(function($92) {
+    return !$$null($92);
   })(split(coerce2("\n"))(lines))));
 };
 var ordUnixTS = ordInt;
@@ -2734,10 +2806,10 @@ var loadEvents = function(v) {
         return v1.value0;
       }
       ;
-      throw new Error("Failed pattern match at GnomeOrgNextSchedule (line 80, column 18 - line 84, column 26): " + [v1.constructor.name]);
+      throw new Error("Failed pattern match at GnomeOrgNextSchedule (line 82, column 18 - line 86, column 26): " + [v1.constructor.name]);
     }
     ;
-    throw new Error("Failed pattern match at GnomeOrgNextSchedule (line 76, column 3 - line 84, column 26): " + [content.constructor.name]);
+    throw new Error("Failed pattern match at GnomeOrgNextSchedule (line 78, column 3 - line 86, column 26): " + [content.constructor.name]);
   };
 };
 var readState = function(cache) {
@@ -2768,7 +2840,7 @@ var getModifiedDate = function(v) {
       return to_unix(file_update.value0);
     }
     ;
-    throw new Error("Failed pattern match at GnomeOrgNextSchedule (line 123, column 7 - line 125, column 39): " + [file_update.constructor.name]);
+    throw new Error("Failed pattern match at GnomeOrgNextSchedule (line 125, column 7 - line 127, column 39): " + [file_update.constructor.name]);
   };
 };
 var eventsPath = function __do2() {
@@ -2780,15 +2852,15 @@ var updateState = function(cache) {
     return function(stateRef) {
       return function __do3() {
         var state2 = read(stateRef)();
-        var $81 = lessThanOrEq2(sub2(now)(state2.updated_at))(61);
-        if ($81) {
+        var $83 = lessThanOrEq2(sub2(now)(state2.updated_at))(61);
+        if ($83) {
           return state2;
         }
         ;
         var path = eventsPath();
         var ts = getModifiedDate(path)();
-        var $82 = lessThanOrEq2(ts)(state2.updated_at);
-        if ($82) {
+        var $84 = lessThanOrEq2(ts)(state2.updated_at);
+        if ($84) {
           return state2;
         }
         ;
@@ -2811,8 +2883,8 @@ var alarmTime = 300;
 var advanceState = function(now) {
   return function(currentState) {
     return bind2(head(currentState.events))(function(nextEvent) {
-      var $83 = greaterThan2(now)(nextEvent.when);
-      if ($83) {
+      var $85 = greaterThan2(now)(nextEvent.when);
+      if ($85) {
         return pure22({
           updated_at: currentState.updated_at,
           status: Waiting.value,
@@ -2858,7 +2930,7 @@ var worker = function(cache) {
             return v.value0;
           }
           ;
-          throw new Error("Failed pattern match at GnomeOrgNextSchedule (line 219, column 12 - line 230, column 17): " + [v.constructor.name]);
+          throw new Error("Failed pattern match at GnomeOrgNextSchedule (line 237, column 12 - line 248, column 17): " + [v.constructor.name]);
         }();
         renderState(now)(ui)(state2)();
         return true;
