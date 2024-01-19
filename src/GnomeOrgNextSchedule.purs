@@ -215,10 +215,11 @@ renderEvent now ui ev = do
     countdown
       | diff < 60.0 = "GO"
       | diff < hour = showR (diff `div` 60.0) <> "m"
-      | diff < day =
+      | diff < 9.0 * hour =
         showR (diff `div` hour)
           <> "h"
           <> showM ((diff `remainder` hour) `div` 60.0)
+      | diff < day = showR (diff `div` hour) <> "h"
       | otherwise = showR (diff `div` day) <> "d"
   Label.set_text ui.countdown countdown
   Label.set_text ui.label ev.what

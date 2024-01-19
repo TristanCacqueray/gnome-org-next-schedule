@@ -2688,15 +2688,19 @@ var renderEvent = function(now) {
           return showR(diff / 60) + "m";
         }
         ;
-        if (diff < day) {
+        if (diff < 9 * 3600) {
           return showR(diff / 3600) + ("h" + showM(remainder(diff)(3600) / 60));
+        }
+        ;
+        if (diff < day) {
+          return showR(diff / 3600) + "h";
         }
         ;
         if (otherwise) {
           return showR(diff / day) + "d";
         }
         ;
-        throw new Error("Failed pattern match at GnomeOrgNextSchedule (line 215, column 5 - line 222, column 50): " + []);
+        throw new Error("Failed pattern match at GnomeOrgNextSchedule (line 215, column 5 - line 223, column 50): " + []);
       }();
       return function __do3() {
         set_text(ui.countdown)(countdown)();
@@ -2720,7 +2724,7 @@ var renderState = function(now) {
         return renderEvent(now)(ui)(v.value0);
       }
       ;
-      throw new Error("Failed pattern match at GnomeOrgNextSchedule (line 227, column 28 - line 231, column 35): " + [v.constructor.name]);
+      throw new Error("Failed pattern match at GnomeOrgNextSchedule (line 228, column 28 - line 232, column 35): " + [v.constructor.name]);
     };
   };
 };
@@ -2930,7 +2934,7 @@ var worker = function(cache) {
             return v.value0;
           }
           ;
-          throw new Error("Failed pattern match at GnomeOrgNextSchedule (line 237, column 12 - line 248, column 17): " + [v.constructor.name]);
+          throw new Error("Failed pattern match at GnomeOrgNextSchedule (line 238, column 12 - line 249, column 17): " + [v.constructor.name]);
         }();
         renderState(now)(ui)(state2)();
         return true;
