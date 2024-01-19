@@ -39,7 +39,10 @@ This is like org-ql--date< but considering closed date too."
          (ts (format-time-string "%FT%T%z" (org-timestamp-to-time scheduled))))
     (format "%s %s" ts title)))
 
-(defun tc/render-sched ()
+(defvar tc/schedule-events ""
+  "The last schedule render to update the files when it changes.")
+
+(defun tc/render-schedule-events ()
   (let* ((entries (org-ql-select '("~/org/projects.org")
                     (tc/mk-next-meeting-query)
                     :action 'element-with-markers
@@ -47,9 +50,12 @@ This is like org-ql--date< but considering closed date too."
                     ))
          (formated (mapcar 'tc/sched-format (seq-filter 'not-habits entries)))
          (report (s-join "\n" (reverse formated))))
-    (f-write-text report 'utf-8 "~/.local/share/gnome-org-next-schedule/events")))
+    (when (not (string= report tc/schedule-events))
+      (setq tc/schedule-events report)
+      (f-write-text report 'utf-8 "~/.local/share/gnome-org-next-schedule/events"))))
 
-;; TODO: call render-sched when the agenda changes
+;; Update schedule events when the agenda is displayed
+(add-hook 'org-agenda-mode-hook 'tc/render-schedule-events)
 ```
 
 … which produces such a file:
