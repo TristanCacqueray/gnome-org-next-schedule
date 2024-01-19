@@ -116,6 +116,22 @@ var applySecond = function(dictApply) {
 var pure = function(dict) {
   return dict.pure;
 };
+var when = function(dictApplicative) {
+  var pure12 = pure(dictApplicative);
+  return function(v) {
+    return function(v1) {
+      if (v) {
+        return v1;
+      }
+      ;
+      if (!v) {
+        return pure12(unit);
+      }
+      ;
+      throw new Error("Failed pattern match at Control.Applicative (line 63, column 1 - line 63, column 63): " + [v.constructor.name, v1.constructor.name]);
+    };
+  };
+};
 var liftA1 = function(dictApplicative) {
   var apply2 = apply(dictApplicative.Apply0());
   var pure12 = pure(dictApplicative);
@@ -183,7 +199,7 @@ var filterImpl = function(f, xs) {
   return xs.filter(f);
 };
 var sortByImpl = function() {
-  function mergeFromTo(compare2, fromOrdering, xs1, xs2, from2, to) {
+  function mergeFromTo(compare3, fromOrdering, xs1, xs2, from2, to) {
     var mid;
     var i;
     var j;
@@ -193,16 +209,16 @@ var sortByImpl = function() {
     var c;
     mid = from2 + (to - from2 >> 1);
     if (mid - from2 > 1)
-      mergeFromTo(compare2, fromOrdering, xs2, xs1, from2, mid);
+      mergeFromTo(compare3, fromOrdering, xs2, xs1, from2, mid);
     if (to - mid > 1)
-      mergeFromTo(compare2, fromOrdering, xs2, xs1, mid, to);
+      mergeFromTo(compare3, fromOrdering, xs2, xs1, mid, to);
     i = from2;
     j = mid;
     k = from2;
     while (i < mid && j < to) {
       x = xs2[i];
       y = xs2[j];
-      c = fromOrdering(compare2(x)(y));
+      c = fromOrdering(compare3(x)(y));
       if (c > 0) {
         xs1[k++] = y;
         ++j;
@@ -218,12 +234,12 @@ var sortByImpl = function() {
       xs1[k++] = xs2[j++];
     }
   }
-  return function(compare2, fromOrdering, xs) {
+  return function(compare3, fromOrdering, xs) {
     var out;
     if (xs.length < 2)
       return xs;
     out = xs.slice(0);
-    mergeFromTo(compare2, fromOrdering, out, xs.slice(0), 0, xs.length);
+    mergeFromTo(compare3, fromOrdering, out, xs.slice(0), 0, xs.length);
     return out;
   };
 }();
@@ -291,6 +307,7 @@ var unsafeCompareImpl = function(lt) {
   };
 };
 var ordIntImpl = unsafeCompareImpl;
+var ordStringImpl = unsafeCompareImpl;
 var ordCharImpl = unsafeCompareImpl;
 
 // output/Data.Eq/foreign.js
@@ -394,6 +411,25 @@ var EQ = /* @__PURE__ */ function() {
   EQ2.value = new EQ2();
   return EQ2;
 }();
+var eqOrdering = {
+  eq: function(v) {
+    return function(v1) {
+      if (v instanceof LT && v1 instanceof LT) {
+        return true;
+      }
+      ;
+      if (v instanceof GT && v1 instanceof GT) {
+        return true;
+      }
+      ;
+      if (v instanceof EQ && v1 instanceof EQ) {
+        return true;
+      }
+      ;
+      return false;
+    };
+  }
+};
 
 // output/Data.Ring/foreign.js
 var intSub = function(x) {
@@ -434,6 +470,14 @@ var ringInt = {
 };
 
 // output/Data.Ord/index.js
+var ordString = /* @__PURE__ */ function() {
+  return {
+    compare: ordStringImpl(LT.value)(EQ.value)(GT.value),
+    Eq0: function() {
+      return eqString;
+    }
+  };
+}();
 var ordInt = /* @__PURE__ */ function() {
   return {
     compare: ordIntImpl(LT.value)(EQ.value)(GT.value),
@@ -452,6 +496,16 @@ var ordChar = /* @__PURE__ */ function() {
 }();
 var compare = function(dict) {
   return dict.compare;
+};
+var comparing = function(dictOrd) {
+  var compare3 = compare(dictOrd);
+  return function(f) {
+    return function(x) {
+      return function(y) {
+        return compare3(f(x))(f(y));
+      };
+    };
+  };
 };
 var greaterThan = function(dictOrd) {
   var compare3 = compare(dictOrd);
@@ -884,9 +938,91 @@ var modify = function(f) {
   });
 };
 
+// output/Control.Monad.ST.Internal/foreign.js
+var map_ = function(f) {
+  return function(a) {
+    return function() {
+      return f(a());
+    };
+  };
+};
+var pure_ = function(a) {
+  return function() {
+    return a;
+  };
+};
+var bind_ = function(a) {
+  return function(f) {
+    return function() {
+      return f(a())();
+    };
+  };
+};
+var foreach = function(as) {
+  return function(f) {
+    return function() {
+      for (var i = 0, l = as.length; i < l; i++) {
+        f(as[i])();
+      }
+    };
+  };
+};
+
+// output/Control.Monad.ST.Internal/index.js
+var $runtime_lazy2 = function(name2, moduleName, init) {
+  var state2 = 0;
+  var val;
+  return function(lineNumber) {
+    if (state2 === 2)
+      return val;
+    if (state2 === 1)
+      throw new ReferenceError(name2 + " was needed before it finished initializing (module " + moduleName + ", line " + lineNumber + ")", moduleName, lineNumber);
+    state2 = 1;
+    val = init();
+    state2 = 2;
+    return val;
+  };
+};
+var functorST = {
+  map: map_
+};
+var monadST = {
+  Applicative0: function() {
+    return applicativeST;
+  },
+  Bind1: function() {
+    return bindST;
+  }
+};
+var bindST = {
+  bind: bind_,
+  Apply0: function() {
+    return $lazy_applyST(0);
+  }
+};
+var applicativeST = {
+  pure: pure_,
+  Apply0: function() {
+    return $lazy_applyST(0);
+  }
+};
+var $lazy_applyST = /* @__PURE__ */ $runtime_lazy2("applyST", "Control.Monad.ST.Internal", function() {
+  return {
+    apply: ap(monadST),
+    Functor0: function() {
+      return functorST;
+    }
+  };
+});
+
 // output/Data.Array.ST/foreign.js
+function unsafeFreezeThawImpl(xs) {
+  return xs;
+}
+var unsafeFreezeImpl = unsafeFreezeThawImpl;
+var unsafeThawImpl = unsafeFreezeThawImpl;
 var sortByImpl2 = function() {
-  function mergeFromTo(compare2, fromOrdering, xs1, xs2, from2, to) {
+  function mergeFromTo(compare3, fromOrdering, xs1, xs2, from2, to) {
     var mid;
     var i;
     var j;
@@ -896,16 +1032,16 @@ var sortByImpl2 = function() {
     var c;
     mid = from2 + (to - from2 >> 1);
     if (mid - from2 > 1)
-      mergeFromTo(compare2, fromOrdering, xs2, xs1, from2, mid);
+      mergeFromTo(compare3, fromOrdering, xs2, xs1, from2, mid);
     if (to - mid > 1)
-      mergeFromTo(compare2, fromOrdering, xs2, xs1, mid, to);
+      mergeFromTo(compare3, fromOrdering, xs2, xs1, mid, to);
     i = from2;
     j = mid;
     k = from2;
     while (i < mid && j < to) {
       x = xs2[i];
       y = xs2[j];
-      c = fromOrdering(compare2(x)(y));
+      c = fromOrdering(compare3(x)(y));
       if (c > 0) {
         xs1[k++] = y;
         ++j;
@@ -921,13 +1057,39 @@ var sortByImpl2 = function() {
       xs1[k++] = xs2[j++];
     }
   }
-  return function(compare2, fromOrdering, xs) {
+  return function(compare3, fromOrdering, xs) {
     if (xs.length < 2)
       return xs;
-    mergeFromTo(compare2, fromOrdering, xs, xs.slice(0), 0, xs.length);
+    mergeFromTo(compare3, fromOrdering, xs, xs.slice(0), 0, xs.length);
     return xs;
   };
 }();
+var pushImpl = function(a, xs) {
+  return xs.push(a);
+};
+
+// output/Control.Monad.ST.Uncurried/foreign.js
+var runSTFn1 = function runSTFn12(fn) {
+  return function(a) {
+    return function() {
+      return fn(a);
+    };
+  };
+};
+var runSTFn2 = function runSTFn22(fn) {
+  return function(a) {
+    return function(b) {
+      return function() {
+        return fn(a, b);
+      };
+    };
+  };
+};
+
+// output/Data.Array.ST/index.js
+var unsafeThaw = /* @__PURE__ */ runSTFn1(unsafeThawImpl);
+var unsafeFreeze = /* @__PURE__ */ runSTFn1(unsafeFreezeImpl);
+var push = /* @__PURE__ */ runSTFn2(pushImpl);
 
 // output/Data.Foldable/foreign.js
 var foldrArray = function(f) {
@@ -1053,6 +1215,29 @@ var runFn4 = function(fn) {
   };
 };
 
+// output/Data.FunctorWithIndex/foreign.js
+var mapWithIndexArray = function(f) {
+  return function(xs) {
+    var l = xs.length;
+    var result = Array(l);
+    for (var i = 0; i < l; i++) {
+      result[i] = f(i)(xs[i]);
+    }
+    return result;
+  };
+};
+
+// output/Data.FunctorWithIndex/index.js
+var mapWithIndex = function(dict) {
+  return dict.mapWithIndex;
+};
+var functorWithIndexArray = {
+  mapWithIndex: mapWithIndexArray,
+  Functor0: function() {
+    return functorArray;
+  }
+};
+
 // output/Data.Traversable/foreign.js
 var traverseArrayImpl = function() {
   function array1(a) {
@@ -1135,7 +1320,7 @@ var sequence = function(dict) {
 
 // output/Data.Unfoldable/foreign.js
 var unfoldrArrayImpl = function(isNothing2) {
-  return function(fromJust4) {
+  return function(fromJust5) {
     return function(fst2) {
       return function(snd2) {
         return function(f) {
@@ -1146,7 +1331,7 @@ var unfoldrArrayImpl = function(isNothing2) {
               var maybe2 = f(value);
               if (isNothing2(maybe2))
                 return result;
-              var tuple = fromJust4(maybe2);
+              var tuple = fromJust5(maybe2);
               result.push(fst2(tuple));
               value = snd2(tuple);
             }
@@ -1159,7 +1344,7 @@ var unfoldrArrayImpl = function(isNothing2) {
 
 // output/Data.Unfoldable1/foreign.js
 var unfoldr1ArrayImpl = function(isNothing2) {
-  return function(fromJust4) {
+  return function(fromJust5) {
     return function(fst2) {
       return function(snd2) {
         return function(f) {
@@ -1172,7 +1357,7 @@ var unfoldr1ArrayImpl = function(isNothing2) {
               var maybe2 = snd2(tuple);
               if (isNothing2(maybe2))
                 return result;
-              value = fromJust4(maybe2);
+              value = fromJust5(maybe2);
             }
           };
         };
@@ -1200,12 +1385,84 @@ var unfoldableArray = {
 };
 
 // output/Data.Array/index.js
+var $$void2 = /* @__PURE__ */ $$void(functorST);
+var map1 = /* @__PURE__ */ map(functorArray);
+var map22 = /* @__PURE__ */ map(functorST);
+var fromJust4 = /* @__PURE__ */ fromJust();
+var when2 = /* @__PURE__ */ when(applicativeST);
+var notEq2 = /* @__PURE__ */ notEq(eqOrdering);
+var sortBy = function(comp) {
+  return runFn3(sortByImpl)(comp)(function(v) {
+    if (v instanceof GT) {
+      return 1;
+    }
+    ;
+    if (v instanceof EQ) {
+      return 0;
+    }
+    ;
+    if (v instanceof LT) {
+      return -1 | 0;
+    }
+    ;
+    throw new Error("Failed pattern match at Data.Array (line 897, column 38 - line 900, column 11): " + [v.constructor.name]);
+  });
+};
+var sortWith = function(dictOrd) {
+  var comparing2 = comparing(dictOrd);
+  return function(f) {
+    return sortBy(comparing2(f));
+  };
+};
+var sortWith1 = /* @__PURE__ */ sortWith(ordInt);
 var slice = /* @__PURE__ */ runFn3(sliceImpl);
+var singleton2 = function(a) {
+  return [a];
+};
+var mapWithIndex2 = /* @__PURE__ */ mapWithIndex(functorWithIndexArray);
 var index = /* @__PURE__ */ function() {
   return runFn4(indexImpl)(Just.create)(Nothing.value);
 }();
+var last = function(xs) {
+  return index(xs)(length(xs) - 1 | 0);
+};
 var head = function(xs) {
   return index(xs)(0);
+};
+var nubBy = function(comp) {
+  return function(xs) {
+    var indexedAndSorted = sortBy(function(x) {
+      return function(y) {
+        return comp(snd(x))(snd(y));
+      };
+    })(mapWithIndex2(Tuple.create)(xs));
+    var v = head(indexedAndSorted);
+    if (v instanceof Nothing) {
+      return [];
+    }
+    ;
+    if (v instanceof Just) {
+      return map1(snd)(sortWith1(fst)(function __do3() {
+        var result = unsafeThaw(singleton2(v.value0))();
+        foreach(indexedAndSorted)(function(v1) {
+          return function __do4() {
+            var lst = map22(function() {
+              var $183 = function($185) {
+                return fromJust4(last($185));
+              };
+              return function($184) {
+                return snd($183($184));
+              };
+            }())(unsafeFreeze(result))();
+            return when2(notEq2(comp(lst)(v1.value1))(EQ.value))($$void2(push(v1)(result)))();
+          };
+        })();
+        return unsafeFreeze(result)();
+      }()));
+    }
+    ;
+    throw new Error("Failed pattern match at Data.Array (line 1115, column 17 - line 1123, column 28): " + [v.constructor.name]);
+  };
 };
 var filter = /* @__PURE__ */ runFn2(filterImpl);
 var drop = function(n) {
@@ -1397,7 +1654,7 @@ var boundedEnumChar = /* @__PURE__ */ function() {
 }();
 
 // output/Data.String.CodeUnits/foreign.js
-var singleton2 = function(c) {
+var singleton3 = function(c) {
   return c;
 };
 var length2 = function(s) {
@@ -1533,7 +1790,7 @@ var indexOf2 = function(p) {
 var fromCharCode2 = /* @__PURE__ */ function() {
   var $75 = toEnumWithDefaults(boundedEnumChar)(bottom(boundedChar))(top(boundedChar));
   return function($76) {
-    return singleton2($75($76));
+    return singleton3($75($76));
   };
 }();
 var singletonFallback = function(v) {
@@ -1545,7 +1802,7 @@ var singletonFallback = function(v) {
   var trail = mod2(v - 65536 | 0)(1024) + 56320 | 0;
   return fromCharCode2(lead) + fromCharCode2(trail);
 };
-var singleton3 = /* @__PURE__ */ _singleton(singletonFallback);
+var singleton4 = /* @__PURE__ */ _singleton(singletonFallback);
 var takeFallback = function(v) {
   return function(v1) {
     if (v < 1) {
@@ -1554,7 +1811,7 @@ var takeFallback = function(v) {
     ;
     var v2 = uncons(v1);
     if (v2 instanceof Just) {
-      return singleton3(v2.value0.head) + takeFallback(v - 1 | 0)(v2.value0.tail);
+      return singleton4(v2.value0.head) + takeFallback(v - 1 | 0)(v2.value0.tail);
     }
     ;
     return v1;
@@ -2610,13 +2867,14 @@ var pure1 = /* @__PURE__ */ pure(applicativeEither);
 var sequence2 = /* @__PURE__ */ sequence(traversableArray)(applicativeEither);
 var map8 = /* @__PURE__ */ map(functorArray);
 var coerce2 = /* @__PURE__ */ coerce();
-var map1 = /* @__PURE__ */ map(functorEffect);
+var compare2 = /* @__PURE__ */ compare(ordString);
+var map12 = /* @__PURE__ */ map(functorEffect);
 var bind2 = /* @__PURE__ */ bind(bindMaybe);
 var pure22 = /* @__PURE__ */ pure(applicativeMaybe);
 var mempty2 = /* @__PURE__ */ mempty(monoidUnit);
 var destroy2 = /* @__PURE__ */ destroy();
 var traverse_2 = /* @__PURE__ */ traverse_(applicativeEffect)(foldableArray);
-var $$void2 = /* @__PURE__ */ $$void(functorEffect);
+var $$void3 = /* @__PURE__ */ $$void(functorEffect);
 var onButtonPressEvent2 = /* @__PURE__ */ onButtonPressEvent();
 var UnixTS = function(x) {
   return x;
@@ -2665,8 +2923,8 @@ var renderEvent = function(now) {
   return function(ui) {
     return function(ev) {
       var v = sub2(ev.when)(now);
-      var showR = function($91) {
-        return show2(floor2($91));
+      var showR = function($92) {
+        return show2(floor2($92));
       };
       var showM = function(v1) {
         var s = showR(v1);
@@ -2700,7 +2958,7 @@ var renderEvent = function(now) {
           return showR(diff / day) + "d";
         }
         ;
-        throw new Error("Failed pattern match at GnomeOrgNextSchedule (line 215, column 5 - line 223, column 50): " + []);
+        throw new Error("Failed pattern match at GnomeOrgNextSchedule (line 217, column 5 - line 225, column 50): " + []);
       }();
       return function __do3() {
         set_text(ui.countdown)(countdown)();
@@ -2724,7 +2982,7 @@ var renderState = function(now) {
         return renderEvent(now)(ui)(v.value0);
       }
       ;
-      throw new Error("Failed pattern match at GnomeOrgNextSchedule (line 228, column 28 - line 232, column 35): " + [v.constructor.name]);
+      throw new Error("Failed pattern match at GnomeOrgNextSchedule (line 230, column 28 - line 234, column 35): " + [v.constructor.name]);
     };
   };
 };
@@ -2755,16 +3013,16 @@ var parseEvents = function(lines) {
         ;
         throw new Error("Failed pattern match at GnomeOrgNextSchedule (line 65, column 13 - line 67, column 23): " + [v1.constructor.name]);
       }())(function(date) {
-        var when2 = to_unix(date);
+        var when3 = to_unix(date);
         return pure1({
-          when: when2,
+          when: when3,
           what: v.after
         });
       });
     });
   };
-  return sequence2(map8(toEvent)(filter(function($92) {
-    return !$$null($92);
+  return sequence2(map8(toEvent)(filter(function($93) {
+    return !$$null($93);
   })(split(coerce2("\n"))(lines))));
 };
 var ordUnixTS = ordInt;
@@ -2781,9 +3039,13 @@ var newUI = function __do() {
 };
 var newState = function(now) {
   return function(baseEvents) {
-    var events = filter(function(ev) {
+    var events = nubBy(function(a) {
+      return function(b) {
+        return compare2(a.what)(b.what);
+      };
+    })(filter(function(ev) {
       return greaterThanOrEq2(ev.when)(now);
-    })(baseEvents);
+    })(baseEvents));
     return {
       status: Waiting.value,
       events,
@@ -2818,7 +3080,7 @@ var loadEvents = function(v) {
 };
 var readState = function(cache) {
   return function __do3() {
-    var now = map1(UnixTS)(getUnix)();
+    var now = map12(UnixTS)(getUnix)();
     var events = loadEvents(cache)();
     return newState(now)(events);
   };
@@ -2844,11 +3106,11 @@ var getModifiedDate = function(v) {
       return to_unix(file_update.value0);
     }
     ;
-    throw new Error("Failed pattern match at GnomeOrgNextSchedule (line 125, column 7 - line 127, column 39): " + [file_update.constructor.name]);
+    throw new Error("Failed pattern match at GnomeOrgNextSchedule (line 127, column 7 - line 129, column 39): " + [file_update.constructor.name]);
   };
 };
 var eventsPath = function __do2() {
-  var home = map1(fromMaybe("/homeless"))(getenv("HOME"))();
+  var home = map12(fromMaybe("/homeless"))(getenv("HOME"))();
   return home + "/.local/share/gnome-org-next-schedule/events";
 };
 var updateState = function(cache) {
@@ -2856,15 +3118,15 @@ var updateState = function(cache) {
     return function(stateRef) {
       return function __do3() {
         var state2 = read(stateRef)();
-        var $83 = lessThanOrEq2(sub2(now)(state2.updated_at))(61);
-        if ($83) {
+        var $84 = lessThanOrEq2(sub2(now)(state2.updated_at))(61);
+        if ($84) {
           return state2;
         }
         ;
         var path = eventsPath();
         var ts = getModifiedDate(path)();
-        var $84 = lessThanOrEq2(ts)(state2.updated_at);
-        if ($84) {
+        var $85 = lessThanOrEq2(ts)(state2.updated_at);
+        if ($85) {
           return state2;
         }
         ;
@@ -2874,7 +3136,7 @@ var updateState = function(cache) {
   };
 };
 var eqUnixTS = eqInt;
-var notEq2 = /* @__PURE__ */ notEq(/* @__PURE__ */ eqRec()(/* @__PURE__ */ eqRowCons(/* @__PURE__ */ eqRowCons(eqRowNil)()({
+var notEq3 = /* @__PURE__ */ notEq(/* @__PURE__ */ eqRec()(/* @__PURE__ */ eqRowCons(/* @__PURE__ */ eqRowCons(eqRowNil)()({
   reflectSymbol: function() {
     return "when";
   }
@@ -2887,8 +3149,8 @@ var alarmTime = 300;
 var advanceState = function(now) {
   return function(currentState) {
     return bind2(head(currentState.events))(function(nextEvent) {
-      var $85 = greaterThan2(now)(nextEvent.when);
-      if ($85) {
+      var $86 = greaterThan2(now)(nextEvent.when);
+      if ($86) {
         return pure22({
           updated_at: currentState.updated_at,
           status: Waiting.value,
@@ -2912,7 +3174,7 @@ var worker = function(cache) {
   return function(ui) {
     return function(stateRef) {
       return function __do3() {
-        var now = map1(UnixTS)(getUnix)();
+        var now = map12(UnixTS)(getUnix)();
         var currentState = updateState(cache)(now)(stateRef)();
         var state2 = function() {
           var v = advanceState(now)(currentState);
@@ -2934,7 +3196,7 @@ var worker = function(cache) {
             return v.value0;
           }
           ;
-          throw new Error("Failed pattern match at GnomeOrgNextSchedule (line 238, column 12 - line 249, column 17): " + [v.constructor.name]);
+          throw new Error("Failed pattern match at GnomeOrgNextSchedule (line 240, column 12 - line 251, column 17): " + [v.constructor.name]);
         }();
         renderState(now)(ui)(state2)();
         return true;
@@ -2954,7 +3216,7 @@ var extension = /* @__PURE__ */ function() {
       return function(stateRef) {
         return function __do3() {
           var state2 = loadState(cache)(stateRef)();
-          var now = map1(UnixTS)(getUnix)();
+          var now = map12(UnixTS)(getUnix)();
           renderState(now)(ui)(state2)();
           return state2;
         };
@@ -2971,20 +3233,20 @@ var extension = /* @__PURE__ */ function() {
             var state2 = read(stateRef)();
             var removeEvent = function(event) {
               return function __do4() {
-                var now2 = map1(UnixTS)(getUnix)();
+                var now2 = map12(UnixTS)(getUnix)();
                 var updatedState = modify(function(s) {
                   return {
                     status: s.status,
                     updated_at: s.updated_at,
                     events: filter(function(ev) {
-                      return notEq2(ev)(event);
+                      return notEq3(ev)(event);
                     })(s.events)
                   };
                 })(stateRef)();
                 return renderState(now2)(ui)(updatedState)();
               };
             };
-            var now = map1(UnixTS)(getUnix)();
+            var now = map12(UnixTS)(getUnix)();
             var renderEventButton = function(event) {
               return function __do4() {
                 var evItem = newItem("")();
@@ -3000,7 +3262,7 @@ var extension = /* @__PURE__ */ function() {
             };
             traverse_2(renderEventButton)(state2.events)();
             var menuItem = newItem("")();
-            connectActivate(menuItem)($$void2(doReload(cache)(ui)(stateRef)))();
+            connectActivate(menuItem)($$void3(doReload(cache)(ui)(stateRef)))();
             var reloadLabel = $$new5("reload")();
             add_child2(menuItem)(reloadLabel)();
             addMenuItem(button)(menuItem)();
@@ -3025,7 +3287,7 @@ var extension = /* @__PURE__ */ function() {
       msg: "enabled OrgNextSchedule",
       events: length(state2.events)
     })();
-    $$void2(onButtonPressEvent2(button)(function(v) {
+    $$void3(onButtonPressEvent2(button)(function(v) {
       return function(v1) {
         return onMenuClick(cache)(ui)(button)(stateRef);
       };

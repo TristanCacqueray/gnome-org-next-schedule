@@ -3,7 +3,7 @@ module GnomeOrgNextSchedule where
 import Prelude
 import Clutter.Actor as Actor
 import Clutter.ActorAlign as ActorAlign
-import Data.Array (drop, filter, head, length)
+import Data.Array (drop, filter, head, length, nubBy)
 import Data.Either (Either(..))
 import Data.Int (floor, toNumber)
 import Data.Maybe (Maybe(..), fromMaybe)
@@ -100,7 +100,9 @@ newState now baseEvents = { status, events, updated_at }
   where
   updated_at = now
 
-  events = filter (\ev -> ev.when >= now) baseEvents
+  events =
+    nubBy (\a b -> compare a.what b.what)
+      $ filter (\ev -> ev.when >= now) baseEvents
 
   status = Waiting
 
