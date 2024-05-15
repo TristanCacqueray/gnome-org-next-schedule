@@ -2,12 +2,8 @@
   "description": "A gnome extension to display the next event.",
   "name": "gnome-org-next-schedule",
   "shell-version": [
-    "40.0",
-    "41",
-    "42",
-    "43",
-    "44",
-    "45"
+    "45",
+    "46"
   ],
   "url": "https://github.com/TristanCacqueray/gnome-org-next-schedule",
   "uuid": "gnome-org-next-schedule@tristancacqueray.github.io",
