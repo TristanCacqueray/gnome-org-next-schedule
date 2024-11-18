@@ -3,7 +3,9 @@
   "name": "gnome-org-next-schedule",
   "shell-version": [
     "45",
-    "46"
+    "46",
+    "47",
+    "48"
   ],
   "url": "https://github.com/TristanCacqueray/gnome-org-next-schedule",
   "uuid": "gnome-org-next-schedule@tristancacqueray.github.io",
